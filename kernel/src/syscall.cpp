@@ -17,6 +17,7 @@
 #include <stacsos/kernel/sched/sleeper.h>
 #include <stacsos/kernel/sched/thread.h>
 #include <stacsos/syscalls.h>
+#include <stacsos/dirent.h>
 
 using namespace stacsos;
 using namespace stacsos::kernel;
@@ -46,6 +47,69 @@ static syscall_result operation_result_to_syscall_result(operation_result &&o)
 {
 	syscall_result_code rc = (syscall_result_code)o.code;
 	return syscall_result { rc, o.data };
+}
+
+static syscall_result do_readdir(const char *path, void *user_buf, u64 max_entries)
+{
+	auto &caller = thread::current().owner();
+	fs_node *node = nullptr;
+
+	if (!path || path[0] == '\0') {
+		node = vfs::get().lookup("/");
+	} 
+	else {
+		return syscall_result { syscall_result_code::not_supported, 0 };
+	}
+
+	if (!node) {
+		return syscall_result { syscall_result_code::not_found, 0 };
+	}
+
+	fat_node *fatnode = (fat_node*) node;
+	if (!fatnode) {
+		return syscall_result { syscall_result_code::not_supported, 0 };
+	}
+
+	fatnode -> ensure_loaded();
+
+	u64 counter = 0;
+
+	for (auto child : fatnode -> children) {
+		if (counter >= max_entries) {
+			break;
+		}
+
+		dirent ent = {};
+		const auto &nm = child->name();
+
+		size_t length = nm.length();
+
+		memops::memcpy(ent.name, nm.c_str(), length);
+		ent.name[length] = 0;
+		ent.type = (child -> kind() == fs_node_kind::directory) ? 'd' : 'f';
+		ent.size = (child -> kind() == fs_node_kind::file) ? (unsigned int)child -> size() : 0;
+
+		auto &dst = ((dirent*)user_buf) + counter;
+
+		u64 dst_address = (u64)dst;
+		auto *rgn = caller.addrspace().get_region_from_address(dst_address);
+		if (!rgn) {
+			return syscall_result { syscall_result_code::not_supported, 0 };
+		}
+
+		if (dst_address + sizeof(dirent) > rgn -> base + rgn -> size) {
+			return syscall_result { syscall_result_code::not_supported, 0};
+		}
+
+		if ((rgn -> flags & region_flags::writable) == (region_flags)0) {
+			return syscall_result { syscall_result_code::not_supported, 0 };
+		}
+
+		memops::memcpy(dst, &ent, sizeof(ent));
+		++counter;
+	}
+
+	return syscall_result { syscall_result_code::ok, counter };
 }
 
 extern "C" syscall_result handle_syscall(syscall_numbers index, u64 arg0, u64 arg1, u64 arg2, u64 arg3)
