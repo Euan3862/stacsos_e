@@ -1,6 +1,6 @@
 this-dir := $(CURDIR)
 
-apps := init shell sched-test mandelbrot cat poweroff sched-test2 cls
+apps := init shell sched-test mandelbrot cat poweroff sched-test2 cls ls
 
 app-dirs := $(foreach APP,$(apps),$(this-dir)/$(APP))
 export app-target-dir := $(out-dir)/rootfs/usr
