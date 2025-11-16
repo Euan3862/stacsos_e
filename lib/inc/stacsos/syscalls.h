@@ -28,7 +28,8 @@ enum class syscall_numbers {
 	join_thread = 14,
 	sleep = 15,
 	poweroff = 16,
-	ioctl = 17
+	ioctl = 17,
+	readdir = 18, //System call to list directory entries.
 };
 
 struct syscall_result {
