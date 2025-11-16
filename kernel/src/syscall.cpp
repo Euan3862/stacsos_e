@@ -127,7 +127,7 @@ extern "C" syscall_result handle_syscall(syscall_numbers index, u64 arg0, u64 ar
 	case syscall_numbers::set_fs:
 		stacsos::kernel::arch::x86::fsbase::write(arg0);
 		return syscall_result { syscall_result_code::ok, 0 };
-
+	
 	case syscall_numbers::set_gs:
 		stacsos::kernel::arch::x86::gsbase::write(arg0);
 		return syscall_result { syscall_result_code::ok, 0 };
@@ -244,6 +244,10 @@ extern "C" syscall_result handle_syscall(syscall_numbers index, u64 arg0, u64 ar
 	case syscall_numbers::poweroff: {
 		pio::outw(0x604, 0x2000);
 		return syscall_result { syscall_result_code::ok, 0 };
+	}
+
+	case syscall_numbers::readdir: {
+    	return do_readdir((const char*)arg0, (void*)arg1, arg2);
 	}
 
 	default:
