@@ -17,6 +17,7 @@
 #include <stacsos/kernel/sched/sleeper.h>
 #include <stacsos/kernel/sched/thread.h>
 #include <stacsos/syscalls.h>
+#include <stacsos/kernel/fs/fat.h>
 #include <stacsos/dirent.h>
 
 using namespace stacsos;
@@ -85,17 +86,15 @@ static syscall_result do_readdir(const char *path, void *user_buf, u64 max_entri
 		return syscall_result { syscall_result_code::not_supported, 0 };
 	}
 
-	fat_node *fatnode = (fat_node*) node;
+	auto fatnode = static_cast<fat_node*>(node);
 	if (!fatnode) {
 		return syscall_result { syscall_result_code::not_supported, 0 };
 	}
 
-	fatnode -> ensure_loaded(); //Make sure that the directory contents are populated.
-
 	u64 counter = 0; //Used to track number of entries copied so far.
 
 	// Iterates through directory children up to the max entries limit.
-	for (auto child : fatnode -> children) {
+	for (auto child : fatnode -> children()) {
 		if (counter >= max_entries) {
 			break;
 		}
@@ -121,7 +120,7 @@ static syscall_result do_readdir(const char *path, void *user_buf, u64 max_entri
 		/* The user space address where the directory entrty should be written
 		*	Calculated by indexing into the callers buffer which has one entry per file.
 		*/
-		auto &dst = ((dirent*)user_buf) + counter;
+		auto *dst = (dirent*)user_buf + counter;
 		u64 dst_address = (u64)dst;
 
 

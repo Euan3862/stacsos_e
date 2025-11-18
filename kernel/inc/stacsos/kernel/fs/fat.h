@@ -61,6 +61,8 @@ public:
 
 	u64 size() const { return data_size_; } //Return the stored data size for this node (0 for directoriees).
 
+	const list<fat_node *> &children() const { return children_; }
+
 protected:
 	virtual fs_node *resolve_child(const string &name) override;
 

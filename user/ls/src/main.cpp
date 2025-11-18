@@ -4,6 +4,8 @@
 #include <stacsos/string.h>
 #include <stacsos/memops.h>
 
+using namespace stacsos;
+
 /*
 *  ls
 *
