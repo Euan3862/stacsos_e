@@ -26,7 +26,29 @@ static void run_command(const char *cmd)
 	if (*cmd)
 		cmd++;
 
-	auto pcmd = process::create(prog, cmd);
+	char path[128];
+	if (prog[0] == '/') {
+		n = 0;
+		while (prog[n]) {
+			path[n] = prog[n];
+			n++;
+		}
+		path[n] = 0;
+	} else {
+		path[0] = '/'; 
+		path[1] = 'u'; 
+		path[2] = 's'; 
+		path[3] = 'r'; 
+		path[4] = '/';
+		n = 5;
+		int i = 0;
+		while (prog[i]) {
+			path[n++] = prog[i++];
+		}
+		path[n] = 0;
+	}
+
+	auto pcmd = process::create(path, cmd);
 	if (!pcmd) {
 		console::get().writef("error: unable to run program '%s'\n", prog);
 	} else {
@@ -36,10 +58,9 @@ static void run_command(const char *cmd)
 
 int main(void)
 {
-	console::get().write("This is the StACSOS shell.  Path resolution is \e\x0fnot-yet-implemented\e\x07, so you\n"
-						 "must type the command EXACTLY.\n\n");
+	console::get().write("This is the StACSOS shell.\n\n");
 
-	console::get().write("Use the cat program to view the README: /usr/cat /docs/README\n\n");
+	console::get().write("Use the cat program to view the README: cat /docs/README\n\n");
 
 	while (true) {
 		console::get().write("> ");
