@@ -25,6 +25,7 @@ static void run_command(const char *cmd)
 	if (*cmd)
 		cmd++;
 
+	//Add /usr/ prefix if needed.
 	char path[128];
 	if (prog[0] == '/') {
 		n = 0;
@@ -33,14 +34,14 @@ static void run_command(const char *cmd)
 			n++;
 		}
 		path[n] = 0;
+
 	} else {
-		//prepend /usr/ to find the program so user commands can be run by name only
-		path[0] = '/'; 
-		path[1] = 'u'; 
-		path[2] = 's'; 
-		path[3] = 'r'; 
-		path[4] = '/';
-		n = 5;
+		const char *prefix = "/usr/"; //Automatically add /usr/ as prefix to non-asbolute paths.
+		n = 0;
+		while (prefix[n]) {
+			path[n] = prefix[n];
+			n++;
+		}
 		int i = 0;
 		while (prog[i]) {
 			path[n++] = prog[i++];

@@ -91,7 +91,7 @@ static syscall_result do_readdir(const char *path, void *user_buf, u64 max_entri
 		return syscall_result { syscall_result_code::not_supported, 0 };
 	}
 
-	// Ensure directory children are loaded from disk before iterating
+	// Ensure directory children are loaded from disk before accessing them.
 	fatnode->ensure_loaded();
 
 	u64 counter = 0; //Used to track number of entries copied so far.
@@ -143,7 +143,6 @@ static syscall_result do_readdir(const char *path, void *user_buf, u64 max_entri
 			return syscall_result { syscall_result_code::not_supported, 0 };
 		}
 
-		// Compute kernel pointer to the backing storage and copy there.
 		u64 offset = dst_address - rgn->base;
 		void *kdst = (char *)rgn->storage->base_address_ptr() + offset;
 		memops::memcpy(kdst, &ent, sizeof(ent));
