@@ -7,6 +7,26 @@
 using namespace stacsos;
 
 /*
+*  bubble sort for directory entries, sorts lexicographically so output is in order.
+*/
+static void sort_entries(dirent* entries, u64 count)
+{
+    for (int i = 0; i < count - 1; i++) {
+
+        for (int j = 0; j < count - i - 1; j++) {
+
+            if (memops::strcmp(entries[j].name, entries[j + 1].name) > 0) {
+                dirent temp = entries[j];
+                entries[j] = entries[j + 1];
+                entries[j + 1] = temp;
+            }
+
+        }
+
+    }
+}
+
+/*
 *  ls
 *
 *  Calls the readdir system call with a user provided path and prints
@@ -18,13 +38,18 @@ using namespace stacsos;
 static void ls(int long_flag, const char *path)
 {
     const int MAX_ENTRIES = 256;
-    dirent* entries = new dirent[MAX_ENTRIES]; //Heap allocation of user buffer
+    dirent* entries = new dirent[MAX_ENTRIES]; //Heap allocation of user buffer.
 
     auto res = syscalls::read_dir(path, entries, MAX_ENTRIES);
     if (res.code != syscall_result_code::ok) {
         console::get().write("ls: failed to read directory\n");
         delete[] entries;
         return;
+    }
+
+    //Sort the entries before displaying them
+    if (res.length > 1) {
+        sort_entries(entries, res.length);
     }
 
     for (u64 i = 0; i < res.length; i++) {
@@ -44,6 +69,11 @@ static void ls(int long_flag, const char *path)
         else {
             console::get().writef("%s\n", entries[i].name);
         }
+    }
+
+    //Warn if directory might have more entries than can be displayed
+    if (res.length == MAX_ENTRIES) {
+        console::get().write("Some entries may not be displayed!\n");
     }
     
     delete[] entries;
@@ -102,7 +132,7 @@ int main(const char *cmdline)
     }
     else {
         /*
-        * Two arguments present, ls -l <directory>
+        * Two arguments present so, ls -l <directory>
         */
         if (memops::strcmp(arg1, "-l") == 0) {
             ls(1, arg2);
