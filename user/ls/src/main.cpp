@@ -11,9 +11,9 @@ using namespace stacsos;
 */
 static void sort_entries(dirent* entries, u64 count)
 {
-    for (int i = 0; i < count - 1; i++) {
+    for (u64 i = 0; i < count - 1; i++) {
 
-        for (int j = 0; j < count - i - 1; j++) {
+        for (u64 j = 0; j < count - i - 1; j++) {
 
             if (memops::strcmp(entries[j].name, entries[j + 1].name) > 0) {
                 dirent temp = entries[j];
