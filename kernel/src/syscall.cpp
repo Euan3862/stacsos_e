@@ -117,7 +117,7 @@ static syscall_result do_readdir(const char *path, void *user_buf, u64 max_entri
 		ent.name[length] = 0;
 
 		// Get file type and size
-		ent.type = (child -> kind() == fs_node_kind::directory) ? 'D' : 'F';
+		ent.type = (child -> kind() == fs_node_kind::directory) ? 'd' : 'f';
 		ent.size = (child -> kind() == fs_node_kind::file) ? (unsigned int)child -> size() : 0;
 
 		/* The user space address where the directory entrty should be written
