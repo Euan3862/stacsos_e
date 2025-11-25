@@ -32,7 +32,7 @@ static void sort_entries(dirent* entries, u64 count)
 *  Calls the readdir system call with a user provided path and prints
 *   either a normal listing or a 'long' listing i.e. ls -l.
 *
-*   The system call fils an array of directory entry structures,
+*   The system call fills an array of directory entry structures,
 *   These are iterated through and the results are formatted then displayed.
 */
 static void ls(int long_flag, const char *path)
